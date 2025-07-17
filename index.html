@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    <title>Calculator</title>
+</head>
+<body>
+    <div class="container">
+        <div class="simple-calc">
+            <div id="calc-form">
+                <input id="calc-input" type="text" disabled/>
+                <button class='btn btn_num' data-num="7" title="7" type="button">7</button>
+                <button class='btn btn_num' data-num="8" title="8" type="button">8</button>
+                <button class='btn btn_num' data-num="9" title="9" type="button">9</button>
+                <button class='btn btn_sign' data-sign="/" title="/" type="button">/</button>
+                <button class='btn btn_sign' data-sign="+/-" title="+/-" type="button">+/-</button>
+                <button class='btn btn_num' data-num="4" title="4" type="button">4</button>
+                <button class='btn btn_num' data-num="5" title="5" type="button">5</button>
+                <button class='btn btn_num' data-num="6" title="6" type="button">6</button>
+                <button class='btn btn_sign' data-sign="*" title="*" type="button">*</button>
+                <button class='btn btn_sign' data-sign="[]" title="[]" type="button">[ ... ]</button>
+                <button class='btn btn_num' data-num="1" title="3" type="button">1</button>
+                <button class='btn btn_num' data-num="2" title="2" type="button">2</button>
+                <button class='btn btn_num' data-num="3" title="1" type="button">3</button>
+                <button class='btn btn_sign'data-sign="-" title="-" type="button">-</button>
+                <button class='btn btn_sign' data-sign="," title="," type="button">,</button>
+                <button class='btn btn_num' data-num="0" title="0" type="button">0</button>
+                <button class='btn btn_sign' data-clear="clear" title="clear" type="button">c</button>
+                <button class='btn btn_sign' data-equals="=" title="=" type="button">=</button>
+                <button class='btn btn_sign' data-sign="+" title="+" type="button">+</button>
+                <button class='btn btn_sign' data-sign="ST" title="Stat" type="button">ST</button>
+            </div>
+        </div>
+        <div class="history">
+            <h1>История</h1>
+            <div class="history-container">
+                <ul id="history-list">
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

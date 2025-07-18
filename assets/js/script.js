@@ -7,7 +7,15 @@ let firstNumber = 0; // объявил переменную для того, ч�
 let operation = "=";
 input.value = 0;
 let arrayMode = false;
-
+let STMode = false;
+let STArray = new Array();
+function averageArray(array) {
+  let sum = 0;
+  for (let x of array) {
+    sum += x;
+  }
+  return sum / array.length;
+}
 function numberOperation(operation, num1, num2) {
   switch (operation) {
     case "+":
@@ -113,7 +121,11 @@ function addNumber(number) {
         }
       }
     } else {
-      input.value += number;
+      if (STMode && ~input.value.indexOf("ST:0")) {
+        input.value = "ST:" + number;
+      } else {
+        input.value += number;
+      }
     }
   }
 }
@@ -154,21 +166,35 @@ function eventCallBack(event) {
     input.value = "0";
     firstNumber = 0;
     arrayMode = false;
+    STMode = false;
+    STArray = new Array();
   }
   if (dataAttributes.sign === "*") {
-    multiplication();
+    if (!STMode) {
+      multiplication();
+    }
   }
   if (dataAttributes.sign === "+") {
-    sum();
+    if (!STMode) {
+      sum();
+    } else {
+      STsum();
+    }
   }
   if (dataAttributes.sign === "-") {
-    subtraction();
+    if (!STMode) {
+      subtraction();
+    }
   }
   if (dataAttributes.sign === "/") {
-    division();
+    if (!STMode) {
+      division();
+    }
   }
   if (dataAttributes.sign === "+/-") {
-    input.value = -input.value;
+    if (!STMode && !arrayMode) {
+      input.value = -input.value;
+    }
   }
   if (dataAttributes.sign === "[]") {
     input.value = "[]";
@@ -185,7 +211,15 @@ function eventCallBack(event) {
     }
   }
   if (!!dataAttributes.equals) {
-    equally();
+    if (STMode) {
+      STEqually();
+    } else {
+      equally();
+    }
+  }
+  if (dataAttributes.sign === "ST") {
+    STMode = true;
+    input.value = "ST:";
   }
 }
 
@@ -209,6 +243,17 @@ function sum() {
     input.value = "";
   }
   operation = "+";
+}
+function STsum() {
+  STArray.push(+input.value.slice(3));
+  input.value = "ST:";
+
+}
+function STEqually() {
+  STArray.push(+input.value.slice(3));
+  input.value = "ST:" + String(averageArray(STArray));
+  STArray = new Array();
+  operation = "=";
 }
 
 function subtraction() {
@@ -247,7 +292,7 @@ function equally() {
       arrayOperation(operation, firstNumber, JSON.parse(input.value))
     );
   } else {
-    input.value = String(numberOperation(operation,firstNumber,+input.value));
+    input.value = String(numberOperation(operation, firstNumber, +input.value));
   }
   operation = "=";
 }

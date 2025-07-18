@@ -11,17 +11,23 @@ let STMode = false;
 let STArray = new Array();
 let historyExpression;
 let STNumberCount = 0;
+
+function outputSTArray(arr) {
+  let ans = "";
+  for (let elem of arr) {
+    ans += String(elem) + "+";
+  }
+  return ans.slice(0, ans.length - 1);
+}
+
 function formatCurrentDateTime() {
   const now = new Date();
-
   const day = String(now.getDate()).padStart(2, "0");
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const year = now.getFullYear();
-
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const seconds = String(now.getSeconds()).padStart(2, "0");
-
   return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 }
 function averageArray(array) {
@@ -258,6 +264,15 @@ function STsum() {
   STNumberCount++;
   if (STNumberCount > 6) {
     alert("Ошибка! можно вводить от 2 до 6 чисел");
+    historyExpression =
+      "ST: " +
+      outputSTArray(STArray) +
+      " " +
+      "Ошибка! можно вводить от 2 до 6 чисел";
+    historyElement.insertAdjacentHTML(
+      "beforebegin",
+      "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
+    );
     STArray = new Array();
     input.value = "ST:";
     STNumberCount = 0;
@@ -271,8 +286,23 @@ function STEqually() {
   if (STNumberCount < 2) {
     input.value = "ST:";
     alert("Ошибка! можно вводить от 2 до 6 чисел");
+    historyExpression =
+      "ST: " +
+      outputSTArray(STArray) +
+      " " +
+      "Ошибка! можно вводить от 2 до 6 чисел";
+    historyElement.insertAdjacentHTML(
+      "beforebegin",
+      "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
+    );
   } else {
     STArray.push(+input.value.slice(3));
+    historyExpression =
+      "ST: " + outputSTArray(STArray) + " =" + String(averageArray(STArray));
+    historyElement.insertAdjacentHTML(
+      "beforebegin",
+      "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
+    );
     input.value = "ST:" + String(averageArray(STArray));
   }
   STArray = new Array();
@@ -330,10 +360,12 @@ function equally() {
     } else {
       input.value = doArrayToString(arrayResult);
     }
-    historyElement.insertAdjacentHTML(
-      "beforebegin",
-      "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
-    );
+    if (operation !== "=") {
+      historyElement.insertAdjacentHTML(
+        "beforebegin",
+        "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
+      );
+    }
   } else {
     historyExpression =
       String(firstNumber) +
@@ -342,10 +374,12 @@ function equally() {
       " = " +
       String(numberOperation(operation, firstNumber, +input.value));
     input.value = String(numberOperation(operation, firstNumber, +input.value));
-    historyElement.insertAdjacentHTML(
-      "beforebegin",
-      "<li>" + formatCurrentDateTime() + " | " + historyExpression + "</li>"
-    );
+    if (operation !== "=") {
+      historyElement.insertAdjacentHTML(
+        "beforebegin",
+        "<li>" + formatCurrentDateTime() + " | " + historyExpression + "</li>"
+      );
+    }
   }
   operation = "=";
 }

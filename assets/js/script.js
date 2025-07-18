@@ -8,6 +8,87 @@ let operation = "=";
 input.value = 0;
 let arrayMode = false;
 
+function numberOperation(operation, num1, num2) {
+  switch (operation) {
+    case "+":
+      return num1 + num2;
+    case "-":
+      return num1 - num2;
+    case "*":
+      return num1 * num2;
+    case "/":
+      if (num2 === 0) {
+        input.value = "0";
+        firstNumber = 0;
+        alert("Ошибка! На ноль делить нельзя");
+      } else {
+        return num1 / num2;
+      }
+      break;
+    case "=":
+      return num2;
+  }
+}
+
+function doArrayToString(arr) {
+  if (arr === "0") {
+    return "0";
+  }
+  return "[" + String(arr) + "]";
+}
+
+function arrayOperation(operation, arr1, arr2) {
+  if (operation !== "=" && arr1.length !== arr2.length) {
+    alert("Введите массивы одинаковой длины");
+    input.value = "0";
+    firstNumber = 0;
+    arrayMode = false;
+    return "0";
+  }
+  if (arr1.length < 2 || arr1.length > 6) {
+    alert("Введите массивы правильной длины");
+    input.value = "0";
+    firstNumber = 0;
+    arrayMode = false;
+    return "0";
+  }
+
+  let answerArr = new Array();
+  switch (operation) {
+    case "=":
+      answerArr = arr2;
+      break;
+    case "+":
+      for (let i = 0; i < arr1.length; i++) {
+        answerArr[i] = arr1[i] + arr2[i];
+      }
+      break;
+    case "-":
+      for (let i = 0; i < arr1.length; i++) {
+        answerArr[i] = arr1[i] - arr2[i];
+      }
+      break;
+    case "*":
+      for (let i = 0; i < arr1.length; i++) {
+        answerArr[i] = arr1[i] * arr2[i];
+      }
+      break;
+    case "/":
+      for (let i = 0; i < arr1.length; i++) {
+        if (arr2[i] !== 0) {
+          answerArr[i] = arr1[i] / arr2[i];
+        } else {
+          alert("Ошибка! На ноль делить нельзя" + " позиция " + String(i + 1));
+          input.value = "0";
+          firstNumber = 0;
+          return "0";
+        }
+      }
+      break;
+  }
+  return answerArr;
+}
+
 function addNumber(number) {
   if (input.value === "0") {
     input.value = number;
@@ -16,8 +97,20 @@ function addNumber(number) {
       if (input.value === "[0]") {
         input.value = "[" + number + "]";
       } else {
-        input.value =
-          input.value.slice(0, input.value.length - 1) + number + "]";
+        if (
+          input.value.length > 3 &&
+          input.value[input.value.length - 3] +
+            input.value[input.value.length - 2] ===
+            ",0"
+        ) {
+          input.value =
+            input.value.slice(0, input.value.length - 2) +
+            number +
+            input.value[input.value.length - 1];
+        } else {
+          input.value =
+            input.value.slice(0, input.value.length - 1) + number + "]";
+        }
       }
     } else {
       input.value += number;
@@ -80,14 +173,15 @@ function eventCallBack(event) {
   if (dataAttributes.sign === "[]") {
     input.value = "[]";
     arrayMode = true;
+    operation = "=";
   }
   if (dataAttributes.sign === ",") {
     if (arrayMode && input.value[input.value.length - 2] !== ",") {
       input.value = input.value.slice(0, input.value.length - 1) + ",]";
-    }else{
-        if(input.value[input.value.length - 2] === ","){
-            alert("Разрешено ставить только 1 запятую");
-        }
+    } else {
+      if (input.value[input.value.length - 2] === ",") {
+        alert("Разрешено ставить только 1 запятую");
+      }
     }
   }
   if (!!dataAttributes.equals) {
@@ -95,74 +189,65 @@ function eventCallBack(event) {
   }
 }
 
-function updateFirstNumber(operation, arrayMode) {
-  switch (operation) {
-    case "+":
-      firstNumber = +input.value + firstNumber;
-      break;
-    case "-":
-      firstNumber = firstNumber - +input.value;
-      break;
-    case "*":
-      firstNumber = firstNumber * +input.value;
-      break;
-    case "/":
-      if (+input.value === 0) {
-        input.value = "0";
-        firstNumber = 0;
-        alert("Ошибка! На ноль делить нельзя");
-      } else {
-        firstNumber = firstNumber / +input.value;
-      }
-      break;
-    case "=":
-      firstNumber = +input.value;
+function updateFirstNumber(operation) {
+  if (arrayMode) {
+    firstNumber = arrayOperation(
+      operation,
+      firstNumber,
+      JSON.parse(input.value)
+    );
+  } else {
+    firstNumber = numberOperation(operation, firstNumber, +input.value);
   }
 }
 
 function sum() {
   updateFirstNumber(operation);
-  input.value = "";
+  if (arrayMode) {
+    input.value = "[]";
+  } else {
+    input.value = "";
+  }
   operation = "+";
 }
 
 function subtraction() {
   updateFirstNumber(operation);
-  input.value = "";
+  if (arrayMode) {
+    input.value = "[]";
+  } else {
+    input.value = "";
+  }
   operation = "-";
 }
 
 function multiplication() {
   updateFirstNumber(operation);
-  input.value = "";
+  if (arrayMode) {
+    input.value = "[]";
+  } else {
+    input.value = "";
+  }
   operation = "*";
 }
 
 function division() {
   updateFirstNumber(operation);
-  input.value = "";
+  if (arrayMode) {
+    input.value = "[]";
+  } else {
+    input.value = "";
+  }
   operation = "/";
 }
 
 function equally() {
-  switch (operation) {
-    case "+":
-      input.value = String(+input.value + firstNumber);
-      break;
-    case "-":
-      input.value = String(firstNumber - +input.value);
-      break;
-    case "*":
-      input.value = String(firstNumber * +input.value);
-      break;
-    case "/":
-      if (+input.value === 0) {
-        input.value = "0";
-        firstNumber = 0;
-        alert("Ошибка! На ноль делить нельзя");
-      } else {
-        input.value = String(firstNumber / +input.value);
-      }
+  if (arrayMode) {
+    input.value = doArrayToString(
+      arrayOperation(operation, firstNumber, JSON.parse(input.value))
+    );
+  } else {
+    input.value = String(numberOperation(operation,firstNumber,+input.value));
   }
   operation = "=";
 }

@@ -235,6 +235,7 @@ function eventCallBack(event) {
   }
   if (dataAttributes.sign === "ST") {
     STMode = true;
+    arrayMode = false;
     input.value = "ST:";
   }
 }
@@ -360,11 +361,20 @@ function equally() {
     } else {
       input.value = doArrayToString(arrayResult);
     }
-    if (operation !== "=") {
+    if (operation !== "=" && arrayResult !== "0") {
       historyElement.insertAdjacentHTML(
         "beforebegin",
         "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
       );
+    } else {
+      if (operation !== "=" && arrayResult == "0") {
+        historyExpression =
+          historyExpression.slice(0, historyExpression.length - 1) + "Ошибка";
+        historyElement.insertAdjacentHTML(
+          "beforebegin",
+          "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
+        );
+      }
     }
   } else {
     historyExpression =

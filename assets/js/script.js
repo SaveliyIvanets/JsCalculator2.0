@@ -304,11 +304,12 @@ function STEqually() {
       "beforebegin",
       "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
     );
-    input.value = "ST:" + String(averageArray(STArray));
+    input.value = String(averageArray(STArray));
   }
   STArray = new Array();
   operation = "=";
   STNumberCount = 0;
+  STMode = false;
 }
 
 function subtraction() {

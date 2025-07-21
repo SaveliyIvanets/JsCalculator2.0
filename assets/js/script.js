@@ -3,9 +3,10 @@
 const buttons = document.querySelectorAll(".btn");
 const input = document.querySelector("#calc-input");
 const historyElement = document.querySelector("#history-list");
-let firstNumber = 0; // объявил переменную для того, чтобы запомнить первое число при любой операции
-let operation = "=";
+
 input.value = 0;
+let firstNumber = 0;
+let operation = "=";
 let arrayMode = false;
 let STMode = false;
 let STArray = new Array();
@@ -37,6 +38,7 @@ function formatCurrentDateTime() {
   const seconds = String(now.getSeconds()).padStart(2, "0");
   return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 }
+
 function averageArray(array) {
   let sum = 0;
   for (let x of array) {
@@ -44,6 +46,7 @@ function averageArray(array) {
   }
   return sum / array.length;
 }
+
 function numberOperation(operation, num1, num2) {
   switch (operation) {
     case "+":
@@ -61,7 +64,6 @@ function numberOperation(operation, num1, num2) {
       } else {
         return num1 / num2;
       }
-      break;
     case "=":
       return num2;
   }
@@ -83,7 +85,6 @@ function arrayOperation(operation, arr1, arr2) {
     alert("Массивы должны содержать не менее 2 элементов и не более 6");
     return "0";
   }
-
   let answerArr = new Array();
   switch (operation) {
     case "=":
@@ -194,24 +195,24 @@ function eventCallBack(event) {
   }
   if (dataAttributes.sign === "*") {
     if (!STMode) {
-      multiplication();
+      calculatorOperation("*");
     }
   }
   if (dataAttributes.sign === "+") {
     if (!STMode) {
-      sum();
+      calculatorOperation("+");
     } else {
       STsum();
     }
   }
   if (dataAttributes.sign === "-") {
     if (!STMode) {
-      subtraction();
+      calculatorOperation("-");
     }
   }
   if (dataAttributes.sign === "/") {
     if (!STMode) {
-      division();
+      calculatorOperation("/");
     }
   }
   if (dataAttributes.sign === "+/-") {
@@ -237,12 +238,14 @@ function eventCallBack(event) {
       }
     }
   }
+
   if (dataAttributes.sign === "[]") {
     input.value = "[]";
     arrayMode = true;
     operation = "=";
     STMode = false;
   }
+
   if (dataAttributes.sign === ",") {
     if (arrayMode && input.value[input.value.length - 2] !== ",") {
       input.value = input.value.slice(0, input.value.length - 1) + ",]";
@@ -252,6 +255,7 @@ function eventCallBack(event) {
       }
     }
   }
+
   if (!!dataAttributes.equals) {
     if (STMode) {
       STEqually();
@@ -259,6 +263,7 @@ function eventCallBack(event) {
       equally();
     }
   }
+
   if (dataAttributes.sign === "ST") {
     STMode = true;
     arrayMode = false;
@@ -278,15 +283,16 @@ function updateFirstNumber(operation) {
   }
 }
 
-function sum() {
+function calculatorOperation(sign) {
   updateFirstNumber(operation);
   if (arrayMode) {
     input.value = "[]";
   } else {
     input.value = "";
   }
-  operation = "+";
+  operation = sign;
 }
+
 function STsum() {
   STNumberCount++;
   if (STNumberCount > 6) {
@@ -299,6 +305,7 @@ function STsum() {
     input.value = "ST:";
   }
 }
+
 function STEqually() {
   STNumberCount++;
   if (STNumberCount < 2) {
@@ -322,36 +329,6 @@ function STEqually() {
   }
 }
 
-function subtraction() {
-  updateFirstNumber(operation);
-  if (arrayMode) {
-    input.value = "[]";
-  } else {
-    input.value = "";
-  }
-  operation = "-";
-}
-
-function multiplication() {
-  updateFirstNumber(operation);
-  if (arrayMode) {
-    input.value = "[]";
-  } else {
-    input.value = "";
-  }
-  operation = "*";
-}
-
-function division() {
-  updateFirstNumber(operation);
-  if (arrayMode) {
-    input.value = "[]";
-  } else {
-    input.value = "";
-  }
-  operation = "/";
-}
-
 function equally() {
   if (arrayMode) {
     let arrayResult = arrayOperation(
@@ -359,12 +336,14 @@ function equally() {
       firstNumber,
       JSON.parse(killComma(input.value))
     );
+
     historyExpression =
       doArrayToString(firstNumber) +
       operation +
       killComma(input.value) +
       " = " +
       doArrayToString(arrayResult);
+
     if (arrayResult === "0") {
       input.value = "0";
       arrayMode = false;
@@ -387,18 +366,24 @@ function equally() {
       firstNumber,
       +input.value
     );
+
     historyExpression =
       String(firstNumber) +
       operation +
       input.value +
       " = " +
       String(numberOperationResult);
-    if (numberOperationResult === "error") {
+
+    if (numberOperationResult === "error" || isNaN(numberOperationResult)) {
       input.value = "0";
     } else {
       input.value = String(numberOperationResult);
     }
-    if (operation !== "=" && numberOperationResult !== "error") {
+    if (
+      operation !== "=" &&
+      numberOperationResult !== "error" &&
+      !isNaN(numberOperationResult)
+    ) {
       historyElement.insertAdjacentHTML(
         "afterend",
         "<li>" + formatCurrentDateTime() + " | " + historyExpression + "</li>"

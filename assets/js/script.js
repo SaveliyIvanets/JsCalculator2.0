@@ -12,6 +12,13 @@ let STArray = new Array();
 let historyExpression;
 let STNumberCount = 0;
 
+function killComma(str) {
+  if (str[str.length - 2] === ",") {
+    return str.slice(0, str.length - 2) + "]";
+  }
+  return str;
+}
+
 function outputSTArray(arr) {
   let ans = "";
   for (let elem of arr) {
@@ -50,6 +57,7 @@ function numberOperation(operation, num1, num2) {
         input.value = "0";
         firstNumber = 0;
         alert("Ошибка! На ноль делить нельзя");
+        return "error";
       } else {
         return num1 / num2;
       }
@@ -68,11 +76,11 @@ function doArrayToString(arr) {
 
 function arrayOperation(operation, arr1, arr2) {
   if (operation !== "=" && arr1.length !== arr2.length) {
-    alert("Введите массивы одинаковой длины");
+    alert("Массивы должны быть одной длины");
     return "0";
   }
   if (arr1.length < 2 || arr1.length > 6) {
-    alert("Введите массивы правильной длины");
+    alert("Массивы должны содержать не менее 2 элементов и не более 6");
     return "0";
   }
 
@@ -209,6 +217,24 @@ function eventCallBack(event) {
   if (dataAttributes.sign === "+/-") {
     if (!STMode && !arrayMode) {
       input.value = -input.value;
+    } else {
+      if (arrayMode) {
+        if (
+          input.value !== "[]" &&
+          input.value[input.value.length - 2] !== ","
+        ) {
+          if (input.value[input.value.length - 3] === "-") {
+            input.value =
+              input.value.slice(0, input.value.length - 3) +
+              input.value.slice(input.value.length - 2, input.value.length);
+          } else {
+            input.value =
+              input.value.slice(0, input.value.length - 2) +
+              "-" +
+              input.value.slice(input.value.length - 2, input.value.length);
+          }
+        }
+      }
     }
   }
   if (dataAttributes.sign === "[]") {
@@ -245,7 +271,7 @@ function updateFirstNumber(operation) {
     firstNumber = arrayOperation(
       operation,
       firstNumber,
-      JSON.parse(input.value)
+      JSON.parse(killComma(input.value))
     );
   } else {
     firstNumber = numberOperation(operation, firstNumber, +input.value);
@@ -265,15 +291,6 @@ function STsum() {
   STNumberCount++;
   if (STNumberCount > 6) {
     alert("Ошибка! можно вводить от 2 до 6 чисел");
-    historyExpression =
-      "ST: " +
-      outputSTArray(STArray) +
-      " " +
-      "Ошибка! можно вводить от 2 до 6 чисел";
-    historyElement.insertAdjacentHTML(
-      "beforebegin",
-      "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
-    );
     STArray = new Array();
     input.value = "ST:";
     STNumberCount = 0;
@@ -287,21 +304,12 @@ function STEqually() {
   if (STNumberCount < 2) {
     input.value = "ST:";
     alert("Ошибка! можно вводить от 2 до 6 чисел");
-    historyExpression =
-      "ST: " +
-      outputSTArray(STArray) +
-      " " +
-      "Ошибка! можно вводить от 2 до 6 чисел";
-    historyElement.insertAdjacentHTML(
-      "beforebegin",
-      "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
-    );
   } else {
     STArray.push(+input.value.slice(3));
     historyExpression =
       "ST: " + outputSTArray(STArray) + " =" + String(averageArray(STArray));
     historyElement.insertAdjacentHTML(
-      "beforebegin",
+      "afterend",
       "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
     );
     input.value = String(averageArray(STArray));
@@ -309,7 +317,9 @@ function STEqually() {
   STArray = new Array();
   operation = "=";
   STNumberCount = 0;
-  STMode = false;
+  if (input.value !== "ST:") {
+    STMode = false;
+  }
 }
 
 function subtraction() {
@@ -347,12 +357,12 @@ function equally() {
     let arrayResult = arrayOperation(
       operation,
       firstNumber,
-      JSON.parse(input.value)
+      JSON.parse(killComma(input.value))
     );
     historyExpression =
       doArrayToString(firstNumber) +
       operation +
-      input.value +
+      killComma(input.value) +
       " = " +
       doArrayToString(arrayResult);
     if (arrayResult === "0") {
@@ -364,30 +374,33 @@ function equally() {
     }
     if (operation !== "=" && arrayResult !== "0") {
       historyElement.insertAdjacentHTML(
-        "beforebegin",
+        "afterend",
         "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
       );
-    } else {
-      if (operation !== "=" && arrayResult == "0") {
-        historyExpression =
-          historyExpression.slice(0, historyExpression.length - 1) + "Ошибка";
-        historyElement.insertAdjacentHTML(
-          "beforebegin",
-          "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
-        );
-      }
     }
   } else {
+    if (input.value === "") {
+      input.value = firstNumber;
+    }
+    let numberOperationResult = numberOperation(
+      operation,
+      firstNumber,
+      +input.value
+    );
     historyExpression =
       String(firstNumber) +
       operation +
       input.value +
       " = " +
-      String(numberOperation(operation, firstNumber, +input.value));
-    input.value = String(numberOperation(operation, firstNumber, +input.value));
-    if (operation !== "=") {
+      String(numberOperationResult);
+    if (numberOperationResult === "error") {
+      input.value = "0";
+    } else {
+      input.value = String(numberOperationResult);
+    }
+    if (operation !== "=" && numberOperationResult !== "error") {
       historyElement.insertAdjacentHTML(
-        "beforebegin",
+        "afterend",
         "<li>" + formatCurrentDateTime() + " | " + historyExpression + "</li>"
       );
     }

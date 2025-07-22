@@ -9,21 +9,24 @@ let firstNumber = 0;
 let operation = "=";
 let arrayMode = false;
 let STMode = false;
-let STArray = new Array();
-let historyExpression;
+let STArray = [];
 let STNumberCount = 0;
 
+function addHistoryNote(historyExpression) {
+  let date = new Date();
+  historyElement.insertAdjacentHTML(
+    "afterend",
+    `<li>${date.toLocaleString("ru-Ru")} | ${historyExpression}</li>`
+  );
+}
 function killComma(str) {
-  if (str[str.length - 2] === ",") {
-    return str.slice(0, str.length - 2) + "]";
-  }
-  return str;
+  return str[str.length - 2] === "," ? `${str.slice(0, str.length - 2)}]` : str;
 }
 
 function outputSTArray(arr) {
   let ans = "";
   for (let elem of arr) {
-    ans += String(elem) + "+";
+    ans += `${String(elem)}+`;
   }
   return ans.slice(0, ans.length - 1);
 }
@@ -36,7 +39,7 @@ function formatCurrentDateTime() {
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const seconds = String(now.getSeconds()).padStart(2, "0");
-  return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+  return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`; // Шаблонный литерал
 }
 
 function averageArray(array) {
@@ -70,10 +73,7 @@ function numberOperation(operation, num1, num2) {
 }
 
 function doArrayToString(arr) {
-  if (arr === "0") {
-    return "0";
-  }
-  return "[" + String(arr) + "]";
+  return arr === "0" ? "0" : `[${String(arr)}]`;
 }
 
 function arrayOperation(operation, arr1, arr2) {
@@ -127,7 +127,7 @@ function addNumber(number) {
   } else {
     if (arrayMode) {
       if (input.value === "[0]") {
-        input.value = "[" + number + "]";
+        input.value = `[${number}]`;
       } else {
         if (
           input.value.length > 3 &&
@@ -146,7 +146,7 @@ function addNumber(number) {
       }
     } else {
       if (STMode && ~input.value.indexOf("ST:0")) {
-        input.value = "ST:" + number;
+        input.value = `ST:${number}`;
       } else {
         input.value += number;
       }
@@ -154,101 +154,78 @@ function addNumber(number) {
   }
 }
 
+function clearInput() {
+  input.value = "0";
+  firstNumber = 0;
+  arrayMode = false;
+  STMode = false;
+  STArray = new Array();
+}
+
 function eventCallBack(event) {
-  let dataAttributes = event.target.dataset;
-  if (dataAttributes.num === "0") {
-    addNumber("0");
+  if (!!event.target.dataset.num) {
+    addNumber(event.target.dataset.num);
   }
-  if (dataAttributes.num === "1") {
-    addNumber("1");
+  if (!!event.target.dataset.clear) {
+    clearInput();
   }
-  if (dataAttributes.num === "2") {
-    addNumber("2");
-  }
-  if (dataAttributes.num === "3") {
-    addNumber("3");
-  }
-  if (dataAttributes.num === "4") {
-    addNumber("4");
-  }
-  if (dataAttributes.num === "5") {
-    addNumber("5");
-  }
-  if (dataAttributes.num === "6") {
-    addNumber("6");
-  }
-  if (dataAttributes.num === "7") {
-    addNumber("7");
-  }
-  if (dataAttributes.num === "8") {
-    addNumber("8");
-  }
-  if (dataAttributes.num === "9") {
-    addNumber("9");
-  }
-  if (!!dataAttributes.clear) {
-    input.value = "0";
-    firstNumber = 0;
-    arrayMode = false;
-    STMode = false;
-    STArray = new Array();
-  }
-  if (dataAttributes.sign === "*") {
+
+  if (~["-", "+", "*", "/"].indexOf(event.target.dataset.sign)) {
     if (!STMode) {
-      calculatorOperation("*");
-    }
-  }
-  if (dataAttributes.sign === "+") {
-    if (!STMode) {
-      calculatorOperation("+");
+      calculatorOperation(event.target.dataset.sign);
     } else {
-      STsum();
+      if (event.target.dataset.sign === "+") {
+        STsum();
+      }
     }
   }
-  if (dataAttributes.sign === "-") {
-    if (!STMode) {
-      calculatorOperation("-");
-    }
-  }
-  if (dataAttributes.sign === "/") {
-    if (!STMode) {
-      calculatorOperation("/");
-    }
-  }
-  if (dataAttributes.sign === "+/-") {
+
+  if (event.target.dataset.sign === "+/-") {
     if (!STMode && !arrayMode) {
       input.value = -input.value;
     } else {
       if (arrayMode) {
+        let commaIndex = input.value.lastIndexOf(",");
+        if (!~commaIndex && input.value !== "[]") {
+          input.value[1] === "-"
+            ? (input.value = `${input.value[0]}${input.value.slice(
+                2,
+                input.value.length
+              )}`)
+            : (input.value = `${input.value[0]}-${input.value.slice(
+                1,
+                input.value.length
+              )}`);
+        }
         if (
-          input.value !== "[]" &&
-          input.value[input.value.length - 2] !== ","
+          ~commaIndex &&
+          input.value !== "[,]" &&
+          input.value.length !== commaIndex + 1
         ) {
-          if (input.value[input.value.length - 3] === "-") {
-            input.value =
-              input.value.slice(0, input.value.length - 3) +
-              input.value.slice(input.value.length - 2, input.value.length);
-          } else {
-            input.value =
-              input.value.slice(0, input.value.length - 2) +
-              "-" +
-              input.value.slice(input.value.length - 2, input.value.length);
-          }
+          input.value[commaIndex + 1] === "-"
+            ? (input.value = `${input.value.slice(
+                0,
+                commaIndex + 1
+              )}${input.value.slice(commaIndex + 2, input.value.length)}`)
+            : (input.value = `${input.value.slice(
+                0,
+                commaIndex + 1
+              )}-${input.value.slice(commaIndex + 1, input.value.length)}`);
         }
       }
     }
   }
 
-  if (dataAttributes.sign === "[]") {
+  if (event.target.dataset.sign === "[]") {
     input.value = "[]";
     arrayMode = true;
     operation = "=";
     STMode = false;
   }
 
-  if (dataAttributes.sign === ",") {
+  if (event.target.dataset.sign === ",") {
     if (arrayMode && input.value[input.value.length - 2] !== ",") {
-      input.value = input.value.slice(0, input.value.length - 1) + ",]";
+      input.value = `${input.value.slice(0, input.value.length - 1)},]`;
     } else {
       if (input.value[input.value.length - 2] === ",") {
         alert("Разрешено ставить только 1 запятую");
@@ -256,15 +233,11 @@ function eventCallBack(event) {
     }
   }
 
-  if (!!dataAttributes.equals) {
-    if (STMode) {
-      STEqually();
-    } else {
-      equally();
-    }
+  if (!!event.target.dataset.equals) {
+    STMode ? STEqually() : equally();
   }
 
-  if (dataAttributes.sign === "ST") {
+  if (event.target.dataset.sign === "ST") {
     STMode = true;
     arrayMode = false;
     input.value = "ST:";
@@ -272,29 +245,27 @@ function eventCallBack(event) {
 }
 
 function updateFirstNumber(operation) {
-  if (arrayMode) {
-    firstNumber = arrayOperation(
-      operation,
-      firstNumber,
-      JSON.parse(killComma(input.value))
-    );
-  } else {
-    firstNumber = numberOperation(operation, firstNumber, +input.value);
-  }
+  arrayMode
+    ? (firstNumber = arrayOperation(
+        operation,
+        firstNumber,
+        JSON.parse(killComma(input.value))
+      ))
+    : (firstNumber = numberOperation(operation, firstNumber, +input.value));
 }
 
 function calculatorOperation(sign) {
   updateFirstNumber(operation);
-  if (arrayMode) {
-    input.value = "[]";
-  } else {
-    input.value = "";
-  }
+  arrayMode ? (input.value = "[]") : (input.value = "");
   operation = sign;
 }
-
 function STsum() {
   STNumberCount++;
+  if (input.value.slice(3) === "") {
+    STNumberCount--;
+    input.value = "ST:";
+    return;
+  }
   if (STNumberCount > 6) {
     alert("Ошибка! можно вводить от 2 до 6 чисел");
     STArray = new Array();
@@ -307,17 +278,18 @@ function STsum() {
 }
 
 function STEqually() {
-  STNumberCount++;
+  if (input.value.slice(3) !== "") {
+    STNumberCount++;
+  }
   if (STNumberCount < 2) {
     input.value = "ST:";
     alert("Ошибка! можно вводить от 2 до 6 чисел");
   } else {
-    STArray.push(+input.value.slice(3));
-    historyExpression =
-      "ST: " + outputSTArray(STArray) + " =" + String(averageArray(STArray));
-    historyElement.insertAdjacentHTML(
-      "afterend",
-      "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
+    if (input.value.slice(3) !== "") {
+      STArray.push(+input.value.slice(3));
+    }
+    addHistoryNote(
+      `ST: ${outputSTArray(STArray)} = ${String(averageArray(STArray))}`
     );
     input.value = String(averageArray(STArray));
   }
@@ -330,6 +302,7 @@ function STEqually() {
 }
 
 function equally() {
+  let historyExpression;
   if (arrayMode) {
     let arrayResult = arrayOperation(
       operation,
@@ -337,12 +310,9 @@ function equally() {
       JSON.parse(killComma(input.value))
     );
 
-    historyExpression =
-      doArrayToString(firstNumber) +
-      operation +
-      killComma(input.value) +
-      " = " +
-      doArrayToString(arrayResult);
+    historyExpression = `${doArrayToString(firstNumber)}${operation}${killComma(
+      input.value
+    )} = ${doArrayToString(arrayResult)}`;
 
     if (arrayResult === "0") {
       input.value = "0";
@@ -352,10 +322,7 @@ function equally() {
       input.value = doArrayToString(arrayResult);
     }
     if (operation !== "=" && arrayResult !== "0") {
-      historyElement.insertAdjacentHTML(
-        "afterend",
-        "<li>" + formatCurrentDateTime() + " |" + historyExpression + "</li>"
-      );
+      addHistoryNote(historyExpression);
     }
   } else {
     if (input.value === "") {
@@ -367,12 +334,9 @@ function equally() {
       +input.value
     );
 
-    historyExpression =
-      String(firstNumber) +
-      operation +
-      input.value +
-      " = " +
-      String(numberOperationResult);
+    historyExpression = `${String(firstNumber)}${operation}${
+      input.value
+    } = ${+String(numberOperationResult)}`;
 
     if (numberOperationResult === "error" || isNaN(numberOperationResult)) {
       input.value = "0";
@@ -384,10 +348,7 @@ function equally() {
       numberOperationResult !== "error" &&
       !isNaN(numberOperationResult)
     ) {
-      historyElement.insertAdjacentHTML(
-        "afterend",
-        "<li>" + formatCurrentDateTime() + " | " + historyExpression + "</li>"
-      );
+      addHistoryNote(historyExpression);
     }
   }
   operation = "=";
